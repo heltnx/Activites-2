@@ -1,0 +1,5 @@
+{
+  "name": "Planificateur d'Activités 2025",
+  "description": "Un calendrier interactif pour planifier les activités de vos proches pour l'année 2025. Faites glisser les activités sur les dates pour organiser facilement le programme.",
+  "requestFramePermissions": []
+}
