@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -11,13 +10,21 @@
         font-family: 'Inter', sans-serif;
       }
       @import url('https://rsms.me/inter/inter.css');
+      /* Correction définitive : classe CSS pour le survol pendant le glisser-déposer */
+      /* Ceci est contrôlé par du JavaScript natif pour éviter les re-rendus React. */
+      .drag-over {
+        background-color: #DBEAFE !important; /* Tailwind's blue-100 */
+        border-color: #93C5FD !important; /* Tailwind's blue-300 */
+      }
     </style>
   <script type="importmap">
 {
   "imports": {
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.3.0/",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.57.4"
   }
 }
 </script>

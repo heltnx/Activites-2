@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Activity } from '../types';
 import { iconMap, ActivityIcon } from './icons';
@@ -5,7 +6,7 @@ import { ACTIVITY_CATEGORIES } from '../constants';
 
 interface AddActivityModalProps {
   onClose: () => void;
-  onSave: (activity: Omit<Activity, 'id'>) => void;
+  onSave: (activity: Omit<Activity, 'id' | 'order'>) => void;
 }
 
 const AddActivityModal: React.FC<AddActivityModalProps> = ({ onClose, onSave }) => {

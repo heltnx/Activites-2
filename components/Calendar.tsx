@@ -5,13 +5,13 @@ import { ChevronLeftIcon, ChevronRightIcon, TrashIcon, ActivityIcon } from './ic
 
 interface CalendarProps {
   scheduledActivities: ScheduledActivities;
-  onDropActivity: (date: string, activity: Activity) => void;
-  onRemoveActivity: (date: string, instanceId: string) => void;
+  onDropActivity: (date: string, activityId: string) => void;
+  onRemoveActivity: (date: string, id: string) => void;
   onViewActivity: (activity: ScheduledActivity) => void;
 }
 
 const Calendar: React.FC<CalendarProps> = ({ scheduledActivities, onDropActivity, onRemoveActivity, onViewActivity }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // Start in 2025
 
   const changeMonth = (offset: number) => {
     setCurrentDate(prevDate => {
@@ -87,13 +87,12 @@ interface CalendarDayProps {
     month: number;
     year: number;
     activities: ScheduledActivity[];
-    onDropActivity: (date: string, activity: Activity) => void;
-    onRemoveActivity: (date: string, instanceId: string) => void;
+    onDropActivity: (date: string, activityId: string) => void;
+    onRemoveActivity: (date: string, id: string) => void;
     onViewActivity: (activity: ScheduledActivity) => void;
 }
 
 const CalendarDay: React.FC<CalendarDayProps> = ({ day, month, year, activities, onDropActivity, onRemoveActivity, onViewActivity }) => {
-    const [isOver, setIsOver] = useState(false);
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     
     const today = new Date();
@@ -103,46 +102,61 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, month, year, activities,
     todayStart.setHours(0,0,0,0);
     const isPast = new Date(year, month, day) < todayStart;
 
+    const isValidDropTarget = (e: React.DragEvent<HTMLDivElement>) => {
+      return !isPast && e.dataTransfer.types.includes('drag-source');
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+      if (isValidDropTarget(e)) {
+        e.currentTarget.classList.add('drag-over');
+      }
+    };
+    
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        if (!isPast) {
-            setIsOver(true);
+        if (isValidDropTarget(e)) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
         }
     };
 
-    const handleDragLeave = () => setIsOver(false);
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+      e.currentTarget.classList.remove('drag-over');
+    };
 
     const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
-        if (isPast) return;
+        e.currentTarget.classList.remove('drag-over');
+        if (!isValidDropTarget(e)) return;
+
+        const activityId = e.dataTransfer.getData('activity-id');
+        const source = e.dataTransfer.getData('drag-source');
         
-        setIsOver(false);
-        try {
-            const activity = JSON.parse(e.dataTransfer.getData('application/json'));
-            onDropActivity(dateStr, activity);
-        } catch(error) {
-            console.error("Failed to parse activity data:", error);
+        if (activityId && source === 'sidebar-activity') {
+            onDropActivity(dateStr, activityId);
+        } else {
+             console.warn("Événement de dépôt ignoré : ID d'activité manquant ou source de glissement non valide.");
         }
     };
     
     return (
         <div 
+            onDragEnter={handleDragEnter}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`border rounded-md p-2 h-40 flex flex-col transition-colors duration-200 ${
-                isOver ? 'bg-blue-100' : isPast ? 'bg-gray-100' : 'bg-white'
+                isPast ? 'bg-gray-100' : 'bg-white'
             } ${isPast ? 'cursor-not-allowed' : ''}`}
         >
             <span className={`font-semibold self-start ${isToday ? 'bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center' : 'text-gray-700'}`}>{day}</span>
             <div className="mt-1 flex-1 overflow-y-auto space-y-1 pr-1">
                 {activities.map(activity => (
                     <ScheduledActivityItem 
-                        key={activity.instanceId}
+                        key={activity.id}
                         activity={activity}
                         onRemove={(e) => {
                           e.stopPropagation();
-                          onRemoveActivity(dateStr, activity.instanceId)
+                          onRemoveActivity(dateStr, activity.id)
                         }}
                         onView={() => onViewActivity(activity)}
                     />
